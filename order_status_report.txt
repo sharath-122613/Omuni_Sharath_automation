@@ -1,0 +1,60 @@
+Order and Consignment Status Report
+-----------------------------------
+[INFO] Step 1: Update inventory to 0
+[INFO] Inventory update (0) response: {"data":[{"tenantId":"7393ce33-8e4f-4106-9fdc-3fdea5c27ec9","sapSkuId":"9287018100","quantity":0,"reserveQty":1,"pickFailQty":0,"resetQty":0,"lastModifiedDate":"2025-08-04T06:53:26.884Z","lastSyncDate":"2025-08-04T06:53:26.884Z","itemId":"OS175403491","posOverwriteQty":0,"eventId":107670565,"posOverwriteDate":"2025-08-04T06:53:26.884Z","rowVersion":36,"counter":0,"inventoryUpdateFromStore":false,"fcId":"Bata_3051","ean":"9287018100","sourceOrg":"NICKFURY","pickFail":false,"localPosSale":false,"state":"ACCEPTED","reason":"DB updated successfully","errorCode":"200","cancellation":false,"processingSequence":0.0,"forceAssign":false,"saleable":true}]}
+[INFO] Step 2: Update inventory to 1500
+[INFO] Inventory update (1500) response: {"data":[{"tenantId":"7393ce33-8e4f-4106-9fdc-3fdea5c27ec9","sapSkuId":"9287018100","quantity":1499,"reserveQty":1,"pickFailQty":0,"resetQty":0,"lastModifiedDate":"2025-08-04T06:53:28.296Z","lastSyncDate":"2025-08-04T06:53:28.296Z","itemId":"OS175403491","posOverwriteQty":1500,"eventId":107670566,"posOverwriteDate":"2025-08-04T06:53:28.296Z","rowVersion":37,"counter":0,"inventoryUpdateFromStore":false,"fcId":"Bata_3051","ean":"9287018100","sourceOrg":"NICKFURY","pickFail":false,"localPosSale":false,"state":"ACCEPTED","reason":"DB updated successfully","errorCode":"200","cancellation":false,"processingSequence":0.0,"forceAssign":false,"saleable":true}]}
+[INFO] Step 3: Create order with random orderReference
+[INFO] Order creation response: {"status":"success","message":"order Placed successfully."}
+[INFO] OrderReference used: OS175429040
+[INFO] Waiting 40 seconds for order status to update...
+[INFO] Step 4: Get consignmentId from order details
+[INFO] ConsignmentId: C2904001
+[INFO] Step 5: Get consignment status
+[INFO] ConsignmentStatus: ASSIGNED
+[INFO] Step 6: Call ChandlerOrderStatusApi
+[INFO] Chandler order status update response: SUCCESS
+[INFO] Step 7: Get updated consignment status
+[INFO] Updated ConsignmentStatus: QCPASS
+[INFO] Step 8: Update consignment status to INVOICED
+[INFO] Consignment status update response: 
+[INFO] Step 9: Validate consignment status is 'Packed'
+[INFO] ConsignmentStatus after invoicing: PACKED
+[INFO] Consignment is invoiced and status is 'Packed'
+[INFO] Step 10: Update consignment status to SHIPPED
+[INFO] Shipment status update response (SHIPPED): [{"Message: ":"Updated Successfully","consignmentId":"C2904001"}]
+[INFO] ConsignmentStatus after shipping: SHIPPED
+[INFO] Consignment is shipped and status is 'Shipped'
+[INFO] Step 11: Update consignment status to DELIVERED
+[INFO] Shipment status update response (DELIVERED): [{"Message: ":"Updated Successfully","consignmentId":"C2904001"}]
+[INFO] ConsignmentStatus after delivery: DELIVERED
+[INFO] Order is delivered. OrderReference: OS175429040, ConsignmentId: C2904001
+[INFO] Step 1: Update inventory to 0
+[INFO] Inventory update (0) response: {"data":[{"tenantId":"7393ce33-8e4f-4106-9fdc-3fdea5c27ec9","sapSkuId":"9287018100","quantity":0,"reserveQty":2,"pickFailQty":0,"resetQty":0,"lastModifiedDate":"2025-08-04T07:03:53.386Z","lastSyncDate":"2025-08-04T07:03:53.386Z","itemId":"OS175429040","posOverwriteQty":0,"eventId":107670568,"posOverwriteDate":"2025-08-04T07:03:53.386Z","rowVersion":39,"counter":0,"inventoryUpdateFromStore":false,"fcId":"Bata_3051","ean":"9287018100","sourceOrg":"NICKFURY","pickFail":false,"localPosSale":false,"state":"ACCEPTED","reason":"DB updated successfully","errorCode":"200","cancellation":false,"processingSequence":0.0,"forceAssign":false,"saleable":true}]}
+[INFO] Step 2: Update inventory to 1500
+[INFO] Inventory update (1500) response: {"data":[{"tenantId":"7393ce33-8e4f-4106-9fdc-3fdea5c27ec9","sapSkuId":"9287018100","quantity":1498,"reserveQty":2,"pickFailQty":0,"resetQty":0,"lastModifiedDate":"2025-08-04T07:03:55.982Z","lastSyncDate":"2025-08-04T07:03:55.982Z","itemId":"OS175429040","posOverwriteQty":1500,"eventId":107670569,"posOverwriteDate":"2025-08-04T07:03:55.982Z","rowVersion":40,"counter":0,"inventoryUpdateFromStore":false,"fcId":"Bata_3051","ean":"9287018100","sourceOrg":"NICKFURY","pickFail":false,"localPosSale":false,"state":"ACCEPTED","reason":"DB updated successfully","errorCode":"200","cancellation":false,"processingSequence":0.0,"forceAssign":false,"saleable":true}]}
+[INFO] Step 3: Create order with random orderReference
+[INFO] Order creation response: {"status":"success","message":"order Placed successfully."}
+[INFO] OrderReference used: OS175429103
+[INFO] Waiting 40 seconds for order status to update...
+[INFO] Step 4: Get consignmentId from order details
+[INFO] ConsignmentId: C2910301
+[INFO] Step 5: Get consignment status
+[INFO] ConsignmentStatus: ASSIGNED
+[INFO] Step 6: Call ChandlerOrderStatusApi
+[INFO] Chandler order status update response: SUCCESS
+[INFO] Step 7: Get updated consignment status
+[INFO] Updated ConsignmentStatus: QCPASS
+[INFO] Step 8: Update consignment status to INVOICED
+[INFO] Consignment status update response: 
+[INFO] Step 9: Validate consignment status is 'Packed'
+[INFO] ConsignmentStatus after invoicing: PACKED
+[INFO] Consignment is invoiced and status is 'Packed'
+[INFO] Step 10: Update consignment status to SHIPPED
+[INFO] Shipment status update response (SHIPPED): [{"Message: ":"Updated Successfully","consignmentId":"C2910301"}]
+[INFO] ConsignmentStatus after shipping: SHIPPED
+[INFO] Consignment is shipped and status is 'Shipped'
+[INFO] Step 11: Update consignment status to DELIVERED
+[INFO] Shipment status update response (DELIVERED): [{"Message: ":"Updated Successfully","consignmentId":"C2910301"}]
+[INFO] ConsignmentStatus after delivery: DELIVERED
+[INFO] Order is delivered. OrderReference: OS175429103, ConsignmentId: C2910301
