@@ -1,16 +1,14 @@
 package com.cloud.omuni_cloud.config;
 
 import com.cloud.omuni_cloud.dbutil.DatabaseConnection;
-import com.cloud.omuni_cloud.dbutil.DatabaseManager;
-import com.cloud.omuni_cloud.dbutil.config.DbConnectionConfig;
 import com.cloud.omuni_cloud.dbutil.config.DatabaseConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
+import com.cloud.omuni_cloud.dbutil.config.DbConnectionConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -19,6 +17,7 @@ import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -32,10 +31,11 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
 
 @Configuration
 @Profile("test")
@@ -48,9 +48,12 @@ import java.util.Properties;
 })
 @EnableTransactionManagement
 @EnableConfigurationProperties(JpaProperties.class)
-@EnableJpaRepositories(basePackages = "com.cloud.omuni_cloud")
+@EnableJpaRepositories(basePackages = "com.cloud.omuni_cloud.repository")
 @EntityScan("com.cloud.omuni_cloud")
-@ComponentScan(basePackages = "com.cloud.omuni_cloud")
+@ComponentScan(basePackages = {
+    "com.cloud.omuni_cloud.service",
+    "com.cloud.omuni_cloud.config"
+})
 public class DatabaseTestConfig {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseTestConfig.class);
 
@@ -68,21 +71,68 @@ public class DatabaseTestConfig {
 
     @Value("${db.password}")
     private String dbPassword;
-
+    
+    @Bean
+    @Primary
+    public DataSource dataSource() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC", 
+            dbHost, dbPort, dbName));
+        config.setUsername(dbUsername);
+        config.setPassword(dbPassword);
+        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        config.setMaximumPoolSize(10);
+        config.setMinimumIdle(2);
+        config.setIdleTimeout(30000);
+        return new HikariDataSource(config);
+    }
+    
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
+        em.setPackagesToScan("com.cloud.omuni_cloud.entity");
+        
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        em.setJpaVendorAdapter(vendorAdapter);
+        
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.hbm2ddl.auto", "validate");
+        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        properties.setProperty("hibernate.show_sql", "true");
+        properties.setProperty("hibernate.format_sql", "true");
+        
+        em.setJpaProperties(properties);
+        return em;
+    }
+    
     @Value("${ssh.host}")
     private String sshHost;
 
     @Value("${ssh.port}")
     private int sshPort;
 
-    @Value("${ssh.username}")
+    @Value("${ssh.username:}")
     private String sshUsername;
 
-    @Value("${ssh.password}")
+    @Value("${ssh.password:}")
     private String sshPassword;
+    
+    @Value("${ssh.privateKey:}")
+    private String sshPrivateKey;
+    
+    @Value("${ssh.passphrase:}")
+    private String sshPassphrase;
 
-    @Value("${ssh.local.port:3307}")
-    private int sshLocalPort;
+    @Value("${ssh.local.port:13306}")
+    private int localPort;
+
+    @Bean
+    @ConditionalOnMissingBean
+    public DatabaseConnection databaseConnection() {
+        // This bean is kept for backward compatibility
+        return DatabaseConnection.getInstance();
+    }
 
     @PostConstruct
     public void init() {
@@ -97,13 +147,33 @@ public class DatabaseTestConfig {
                 dbName,
                 dbUsername,
                 dbPassword
-            ).withSsh(
-                sshHost,
-                sshPort,
-                sshUsername,
-                sshPassword,
-                sshLocalPort
             );
+            
+            // Only configure SSH if username is provided
+            if (sshUsername != null && !sshUsername.isEmpty()) {
+                if (sshPrivateKey != null && !sshPrivateKey.isEmpty()) {
+                    // Use key-based authentication if private key is provided
+                    logger.warn("Private key authentication is not fully supported in DbConnectionConfig. Using private key as password.");
+                    dbConfig.withSsh(
+                        sshHost,
+                        sshPort,
+                        sshUsername,
+                        sshPrivateKey, // Using private key as password (not ideal)
+                        localPort
+                    );
+                } else if (sshPassword != null && !sshPassword.isEmpty()) {
+                    // Fall back to password authentication if no private key is provided
+                    dbConfig.withSsh(
+                        sshHost,
+                        sshPort,
+                        sshUsername,
+                        sshPassword,
+                        localPort
+                    );
+                } else {
+                    logger.warn("SSH username provided but no authentication method specified. SSH tunneling will not be used.");
+                }
+            }
 
             // Add the configuration to DatabaseConfig with the name "nickfury"
             DatabaseConfig.addDatabaseConfig("nickfury", dbConfig);
@@ -113,91 +183,32 @@ public class DatabaseTestConfig {
             throw new RuntimeException("Failed to configure database connection", e);
         }
     }
-
-    @Bean
-    @Primary
-    public DataSource dataSource() {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true", 
-            dbHost, dbPort, dbName));
-        config.setUsername(dbUsername);
-        config.setPassword(dbPassword);
-        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        config.setMaximumPoolSize(10);
-        config.setMinimumIdle(2);
-        config.setConnectionTimeout(30000);
-        config.setIdleTimeout(600000);
-        config.setMaxLifetime(1800000);
-        config.setAutoCommit(true);
-        config.setLeakDetectionThreshold(60000);
-        config.setPoolName("TestHikariPool");
-        
-        // Add Hibernate properties
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        config.addDataSourceProperty("useServerPrepStmts", "true");
-        config.addDataSourceProperty("useLocalSessionState", "true");
-        config.addDataSourceProperty("rewriteBatchedStatements", "true");
-        config.addDataSourceProperty("cacheResultSetMetadata", "true");
-        config.addDataSourceProperty("cacheServerConfiguration", "true");
-        config.addDataSourceProperty("elideSetAutoCommits", "true");
-        
-        return new HikariDataSource(config);
-    }
     
     @Bean
     @Primary
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
-            DataSource dataSource, JpaProperties jpaProperties) {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource);
-        em.setPackagesToScan("com.cloud.omuni_cloud");
-        
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
-        
-        Properties properties = new Properties();
-        properties.putAll(jpaProperties.getProperties());
-        properties.put("hibernate.hbm2ddl.auto", "update");
-        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-        properties.put("hibernate.show_sql", "true");
-        properties.put("hibernate.format_sql", "true");
-        
-        // Enable HikariCP connection pool logging
-        properties.put("hibernate.hikari.connectionTimeout", "30000");
-        properties.put("hibernate.hikari.minimumIdle", "2");
-        properties.put("hibernate.hikari.maximumPoolSize", "10");
-        properties.put("hibernate.hikari.idleTimeout", "600000");
-        properties.put("hibernate.hikari.maxLifetime", "1800000");
-        properties.put("hibernate.hikari.autoCommit", "true");
-        properties.put("hibernate.hikari.leakDetectionThreshold", "60000");
-        properties.put("hibernate.hikari.poolName", "TestHikariPool");
-        
-        em.setJpaProperties(properties);
-        return em;
-    }
-    
-    @Bean(destroyMethod = "close")
-    @Primary
-    public DatabaseManager databaseManager(DataSource dataSource) {
-        DatabaseManager manager = new DatabaseManager("nickfury");
-        // Initialize the database connection if needed
-        databaseConnection();
-        return manager;
-    }
-    
-    @Bean(destroyMethod = "closeAllConnections")
-    @Primary
-    public DatabaseConnection databaseConnection() {
-        return DatabaseConnection.getInstance();
-    }
-    
-    @Bean
-    @Primary
+    @ConditionalOnMissingBean
     public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory);
         return transactionManager;
+    }
+    
+    @Bean
+    @Primary
+    public JpaProperties jpaProperties() {
+        JpaProperties jpaProperties = new JpaProperties();
+        jpaProperties.setShowSql(true);
+        
+        // Create a Map for Hibernate properties
+        Map<String, String> properties = new HashMap<>();
+        properties.put("hibernate.format_sql", "true");
+        properties.put("hibernate.jdbc.batch_size", "30");
+        properties.put("hibernate.order_inserts", "true");
+        properties.put("hibernate.order_updates", "true");
+        properties.put("hibernate.jdbc.batch_versioned_data", "true");
+        
+        // Set the properties to jpaProperties
+        jpaProperties.getProperties().putAll(properties);
+        return jpaProperties;
     }
 }

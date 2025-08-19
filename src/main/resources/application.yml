@@ -1,0 +1,78 @@
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# Spring Application Name
+spring:
+  application:
+    name: omni-cloud-service
+
+  # Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:13306/nickfury?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: HikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+    
+    # SSH Tunnel Configuration
+    ssh-tunnel:
+      enabled: true
+      host: ${SSH_HOST:bastion-preprod.omuni.com}
+      port: ${SSH_PORT:2040}
+      username: ${SSH_USERNAME:your_ssh_username}
+      password: ${SSH_PASSWORD:your_ssh_password}
+      private-key: ${SSH_PRIVATE_KEY:}
+      remote-host: oms-02-new.cnkclpncauoh.us-east-1.rds.amazonaws.com
+      remote-port: 3306
+      local-port: 13306
+
+  # JPA/Hibernate Configuration
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 50
+          order_inserts: true
+          order_updates: true
+    hibernate:
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.cloud.omuni_cloud: DEBUG
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 7
+
+# API Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+# Application-specific Properties
+app:
+  api:
+    base-url: https://api-preprod.omuni.com
+    auth-token: ${API_AUTH_TOKEN:your_auth_token_here}

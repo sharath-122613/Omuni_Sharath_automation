@@ -1,0 +1,32 @@
+Order and Consignment Status Report
+-----------------------------------
+[INFO] Step 1: Update inventory to 0
+[INFO] Inventory update (0) response: {"data":[{"tenantId":"7393ce33-8e4f-4106-9fdc-3fdea5c27ec9","sapSkuId":"9287018100","quantity":0,"reserveQty":11,"pickFailQty":0,"resetQty":0,"lastModifiedDate":"2025-08-19T09:59:00.721Z","lastSyncDate":"2025-08-19T09:59:00.721Z","itemId":"OS175559598","posOverwriteQty":0,"eventId":107674341,"posOverwriteDate":"2025-08-19T09:59:00.721Z","rowVersion":216,"counter":0,"inventoryUpdateFromStore":false,"fcId":"Bata_3051","ean":"9287018100","sourceOrg":"NICKFURY","pickFail":false,"localPosSale":false,"state":"ACCEPTED","reason":"DB updated successfully","errorCode":"200","cancellation":false,"processingSequence":0.0,"forceAssign":false,"saleable":true}]}
+[INFO] Step 2: Update inventory to 1500
+[INFO] Inventory update (1500) response: {"data":[{"tenantId":"7393ce33-8e4f-4106-9fdc-3fdea5c27ec9","sapSkuId":"9287018100","quantity":1489,"reserveQty":11,"pickFailQty":0,"resetQty":0,"lastModifiedDate":"2025-08-19T09:59:01.765Z","lastSyncDate":"2025-08-19T09:59:01.765Z","itemId":"OS175559598","posOverwriteQty":1500,"eventId":107674342,"posOverwriteDate":"2025-08-19T09:59:01.765Z","rowVersion":217,"counter":0,"inventoryUpdateFromStore":false,"fcId":"Bata_3051","ean":"9287018100","sourceOrg":"NICKFURY","pickFail":false,"localPosSale":false,"state":"ACCEPTED","reason":"DB updated successfully","errorCode":"200","cancellation":false,"processingSequence":0.0,"forceAssign":false,"saleable":true}]}
+[INFO] Step 3: Create order with random orderReference
+[INFO] Order creation response: {"status":"success","message":"order Placed successfully."}
+[INFO] OrderReference used: OS175559754
+[INFO] Verifying booking call in Chandler DB...
+[SUCCESS] Booking call verified in Chandler DB. Data: [WARNING] No store order found with orderId: OS175559754
+[INFO] Waiting 50 seconds for order status to update...
+[INFO] Step 4: Get consignmentId from order details
+[INFO] ConsignmentId: C5975401
+[INFO] Step 5: Get consignment status
+[INFO] ConsignmentStatus: ASSIGNED
+[INFO] Step 6: Call ChandlerOrderStatusApi
+[INFO] Chandler order status update response: SUCCESS
+[INFO] Step 7: Get updated consignment status
+[INFO] Updated ConsignmentStatus: QCPASS
+[INFO] Step 8: Update consignment status to INVOICED
+[INFO] Consignment status update response: 
+[INFO] Step 9: Validate consignment status is 'Packed'
+[INFO] ConsignmentStatus after invoicing: PACKED
+[INFO] Verifying sale call in Chandler DB...
+[SUCCESS] Sale call verified in Chandler DB. Data: [WARNING] No sale order found with orderNo: OS175559754
+[INFO] Consignment is invoiced and status is 'Packed'
+[INFO] Step 10: Update consignment status to SHIPPED
+[INFO] Shipment status update response (SHIPPED): [{"Message: ":"Updated Successfully","consignmentId":"C5975401"}]
+[INFO] ConsignmentStatus after shipping: PACKED
+[ERROR] Consignment is not Shipped
+[FATAL] Test failed: Consignment is not Shipped

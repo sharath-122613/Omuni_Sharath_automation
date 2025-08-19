@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Premain-Class: com.cloud.omuni_cloud.agent.ModuleAccessAgent
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true

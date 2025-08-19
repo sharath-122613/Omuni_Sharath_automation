@@ -1,0 +1,18 @@
+Order and Consignment Status Report
+-----------------------------------
+[INFO] Step 1: Update inventory to 0
+[INFO] Inventory update (0) response: {"data":[{"tenantId":"7393ce33-8e4f-4106-9fdc-3fdea5c27ec9","sapSkuId":"9287018100","quantity":0,"reserveQty":12,"pickFailQty":0,"resetQty":0,"lastModifiedDate":"2025-08-19T07:38:30.842Z","lastSyncDate":"2025-08-19T07:38:30.842Z","itemId":"OS175558883","posOverwriteQty":0,"eventId":107674237,"posOverwriteDate":"2025-08-19T07:38:30.842Z","rowVersion":191,"counter":0,"inventoryUpdateFromStore":false,"fcId":"Bata_3051","ean":"9287018100","sourceOrg":"NICKFURY","pickFail":false,"localPosSale":false,"state":"ACCEPTED","reason":"DB updated successfully","errorCode":"200","cancellation":false,"processingSequence":0.0,"forceAssign":false,"saleable":true}]}
+[INFO] Step 2: Update inventory to 1500
+[INFO] Inventory update (1500) response: {"data":[{"tenantId":"7393ce33-8e4f-4106-9fdc-3fdea5c27ec9","sapSkuId":"9287018100","quantity":1488,"reserveQty":12,"pickFailQty":0,"resetQty":0,"lastModifiedDate":"2025-08-19T07:38:31.771Z","lastSyncDate":"2025-08-19T07:38:31.771Z","itemId":"OS175558883","posOverwriteQty":1500,"eventId":107674238,"posOverwriteDate":"2025-08-19T07:38:31.771Z","rowVersion":192,"counter":0,"inventoryUpdateFromStore":false,"fcId":"Bata_3051","ean":"9287018100","sourceOrg":"NICKFURY","pickFail":false,"localPosSale":false,"state":"ACCEPTED","reason":"DB updated successfully","errorCode":"200","cancellation":false,"processingSequence":0.0,"forceAssign":false,"saleable":true}]}
+[INFO] Step 3: Create order with random orderReference
+[INFO] Order creation response: {"status":"success","message":"order Placed successfully."}
+[INFO] OrderReference used: OS175558911
+[INFO] Verifying booking call in Chandler DB...
+[SUCCESS] Booking call verified in Chandler DB. Data: [WARNING] No store order found with orderId: OS175558911
+[INFO] Waiting 50 seconds for order status to update...
+[INFO] Step 4: Get consignmentId from order details
+[INFO] ConsignmentId: C5891101
+[INFO] Step 5: Get consignment status
+[INFO] ConsignmentStatus: UNASSIGNED
+[ERROR] Order is not in Assigned status
+[FATAL] Test failed: Order is not in Assigned status
